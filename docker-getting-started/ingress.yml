@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: docker-getting-started-service
+  namespace: docker-getting-started
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  type: NodePort
+  selector:
+    app: docker-getting-started
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: docker-getting-started-ingress
+  namespace: docker-getting-started
+  annotations:
+    # Specify the ALB ingress (Internet Facing)
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    # SSL Settings
+    # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-southeast-1:556746510843:certificate/114db3bc-2f4f-4d56-a292-c002d944108a
+    # alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+    # Health Check Settings
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    # # Authentication
+    # alb.ingress.kubernetes.io/auth-type: cognito
+    # alb.ingress.kubernetes.io/auth-idp-cognito: '{"userPoolARN":"arn:aws:cognito-idp:ap-southeast-1:545983628851:userpool/ap-southeast-1_57Jjp27QR","userPoolClientID":"178irvt6j1hg1fcebsb7d4ovqs","userPoolDomain":"hendryaw-alb-authentication"}'
+    # alb.ingress.kubernetes.io/auth-on-unauthenticated-request: authenticate
+    # alb.ingress.kubernetes.io/auth-scope: 'email openid'
+    # alb.ingress.kubernetes.io/auth-session-cookie: AWSELBAuthSessionCookie
+spec:
+  rules:
+    - http:
+        paths:
+          # - path: /
+          #   pathType: Prefix
+          #   backend:
+          #     service:
+          #       name: ssl-redirect
+          #       port: 
+          #         name: use-annotation
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: docker-getting-started-service
+                port:
+                  number: 80

@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docker-getting-started
+  labels:
+    app: docker-getting-started
+  namespace: docker-getting-started
+spec:
+  selector:
+    matchLabels:
+      app: docker-getting-started
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: docker-getting-started
+    spec:
+      containers:
+        - image: docker/getting-started:latest
+          imagePullPolicy: Always
+          name: docker-getting-started
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              port: 80
+              path: /
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 100m
+              memory: 100Mi
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 30
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - "docker-getting-started"
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+          - weight: 20
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - "docker-getting-started"
+              topologyKey: beta.kubernetes.io/instance-type
+          - weight: 10
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - "docker-getting-started"
+              topologyKey: kubernetes.io/hostname
